@@ -49,9 +49,6 @@ jobs:
         cd lpbinary
         bash install.sh
 
-    # =========================
-    # FIXED GSI STEP (SAFE)
-    # =========================
     - name: Downloading GSI And Extracting
       run: |
         cd lpbinary/binary
@@ -62,46 +59,50 @@ jobs:
         mv gsi.img.xz sys/
         cd sys
 
-        # extract safely
         unxz gsi.img.xz
 
-        # ensure we actually got an img
-        IMG_FILE=$(ls *.img 2>/dev/null | head -n 1)
+        IMG=$(ls *.img | head -n 1)
 
-        if [ -z "$IMG_FILE" ]; then
-          echo "ERROR: No .img found after extraction"
+        if [ -z "$IMG" ]; then
+          echo "GSI extraction failed"
           ls -lah
           exit 1
         fi
 
-        mv "$IMG_FILE" ../system.img
+        mv "$IMG" ../system.img
         cd ..
 
     - name: Preparing Files
       run: |
         cd lpbinary/binary
 
-        wget "${{ github.event.inputs.VENDOR }}"
+        wget -O vendor.img "${{ github.event.inputs.VENDOR }}"
 
-        wget -O product.img https://github.com/Arandomaxo/a035f-vendor-test-file/releases/download/v1.0/product.img || echo "product.img missing - skipping"
-        wget -O system_ext.img https://github.com/Arandomaxo/a035f-vendor-test-file/releases/download/v1.0/system_ext.img || echo "system_ext.img missing - skipping"
+        wget -O product.img https://github.com/Arandomaxo/a035f-vendor-test-file/releases/download/v1.0/product.img || true
+        wget -O system_ext.img https://github.com/Arandomaxo/a035f-vendor-test-file/releases/download/v1.0/system_ext.img || true
 
     - name: Packing
       run: |
         cd lpbinary/binary
 
-        ./lpmake \
-        --metadata-size 65536 \
+        ARGS="--metadata-size 65536 \
         --super-name super \
         --metadata-slots 2 \
         --device super:6763315200 \
         --group main:6761218048 \
         --partition system:readonly:$(stat -c%s system.img) --image system=system.img \
-        --partition vendor:readonly:$(stat -c%s vendor.img) --image vendor=vendor.img \
-        --partition product:readonly:$(stat -c%s product.img || echo 0) --image product=product.img \
-        --partition system_ext:readonly:$(stat -c%s system_ext.img || echo 0) --image system_ext=system_ext.img \
-        --sparse \
-        --output super.img
+        --partition vendor:readonly:$(stat -c%s vendor.img) --image vendor=vendor.img"
+
+        # only add optional partitions if they exist AND are valid
+        if [ -f product.img ] && file product.img | grep -q "Android"; then
+          ARGS="$ARGS --partition product:readonly:$(stat -c%s product.img) --image product=product.img"
+        fi
+
+        if [ -f system_ext.img ] && file system_ext.img | grep -q "Android"; then
+          ARGS="$ARGS --partition system_ext:readonly:$(stat -c%s system_ext.img) --image system_ext=system_ext.img"
+        fi
+
+        ./lpmake $ARGS --sparse --output super.img
 
     - name: Creating tar and compressing to 7z
       run: |
