@@ -22,7 +22,7 @@ on:
         required: true
         default: 'A035FXXS9CYG1'
       VENDOR:
-        description: 'Enter Direct Link Of Your Version Vendor' # should keep this as default since its prob compatible with all phones
+        description: 'Enter Direct Link Of Your Version Vendor' # should keep this as default since its prob compatible with all A03 bit 9 phones
         required: true
         default: 'https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/vendor.img'
 
