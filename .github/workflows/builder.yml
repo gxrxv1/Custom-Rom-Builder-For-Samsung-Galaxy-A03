@@ -34,10 +34,10 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Install Dependencies # should prob update stuff that is dead in this ubuntu runner
+    - name: Install Dependencies # should prob update stuff that is dead in this ubuntu runner, thanks p7zip but uhh, you arent maintained anymore :(
       run: |
         sudo apt update
-        sudo apt install -y zip xz-utils unzip p7zip-full 7zip-rar wget android-sdk-libsparse-utils file  
+        sudo apt install -y zip xz-utils unzip 7zip 7zip-rar wget android-sdk-libsparse-utils file  
 
     - name: Installing Tools # keep this
       run: |
