@@ -10,11 +10,11 @@ on:
   workflow_dispatch:
     inputs:
       GSI:
-        description: 'GSI Image Direct Link' # supports .img, .7z, .xz, .gz, .zip
+        description: 'GSI Image Direct Link' # supports .img, .7z, .xz, .gz, .zip (wait what i have img suppot?)
         required: true
         default: 'https://github.com/naz664/ArrowOS_gsi/releases/download/v2023.10.28/ArrowOS-13.1-arm64_bgN-slim-Unofficial.img.xz'
       NAME:
-        description: 'Rom Name'
+        description: 'Rom Name' # ig set it to anything you want
         required: true
         default: 'ArrowOS-13.1-arm64_bgN-slim-Unofficial.7z'
       VERSION:
@@ -22,30 +22,30 @@ on:
         required: true
         default: 'A035FXXS9CYG1'
       VENDOR:
-        description: 'Enter Direct Link Of Your Version Vendor' # should keep this as default since its prob compatible with all phones
+        description: 'Enter Direct Link Of Your Version Vendor' # should keep this as default since its prob compatible with all A03 bit 9 phones
         required: true
         default: 'https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/vendor.img'
 
 jobs:
   Build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest 
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Install Dependencies
+    - name: Install Dependencies # should prob update stuff that is dead in this ubuntu runner, thanks p7zip but uhh, you arent maintained anymore :(
       run: |
         sudo apt update
-        sudo apt install -y zip xz-utils unzip p7zip-full p7zip-rar wget android-sdk-libsparse-utils file
+        sudo apt install -y zip xz-utils unzip 7zip 7zip-rar wget android-sdk-libsparse-utils file  
 
-    - name: Installing Tools
+    - name: Installing Tools # keep this
       run: |
         git clone https://github.com/Exynos-nigg/lpunpack-lpmake-mirror.git lpbinary
         cd lpbinary
         bash install.sh
 
-    - name: Downloading Your GSI And Extracting 
+    - name: Downloading Your GSI And Extracting # file type detect and delete sys; gsi_archive for storage space
       run: |
         cd lpbinary/binary
         wget "${{ github.event.inputs.GSI }}" -O gsi_archive
@@ -80,21 +80,21 @@ jobs:
         
         rm -rf sys gsi_archive
 
-    - name: Preparing Files
+    - name: Preparing Files # downloading product.img and system_ext.img
       run: |
         cd lpbinary/binary
         wget "${{ github.event.inputs.VENDOR }}" -O vendor.img
         wget https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/product.img -O product.img
         wget https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/system_ext.img -O system_ext.img 
 
-    - name: Packing
+    - name: Packing # packing to 7z package and delete system.img; vendor.img; product.img and system_ext.img
       run: |
         cd lpbinary/binary
         ./lpmake --metadata-size 65536 --super-name super --metadata-slots 3 --device super:6763315200 --group main:6761218048 --partition system:readonly:$(ls -nl system.img | awk '{print $5}'):main --image system=system.img --partition vendor:readonly:$(ls -nl vendor.img | awk '{print $5}'):main --image vendor=vendor.img --partition product:readonly:$(ls -nl product.img | awk '{print $5}'):main --image product=product.img --partition system_ext:readonly:$(ls -nl system_ext.img | awk '{print $5}'):main --image system_ext=system_ext.img --sparse --output super.img
         # Remove individual raw images immediately after creating super.img to save disk space
         rm -f system.img vendor.img product.img system_ext.img
 
-    - name: Creating tar and compressing to 7z
+    - name: Creating tar and compressing to 7z # actual packing to a 7z and also deleting super.img and super.tar
       run: |
         cd lpbinary/binary
         tar -cvf super.tar super.img
@@ -102,7 +102,7 @@ jobs:
         7z a "${{ github.event.inputs.NAME }}" super.tar
         rm -f super.tar
 
-    - name: Upload to Release
+    - name: Upload to Release # uploading to releases
       uses: softprops/action-gh-release@v2
       with:
         files: lpbinary/binary/${{ github.event.inputs.NAME }}
