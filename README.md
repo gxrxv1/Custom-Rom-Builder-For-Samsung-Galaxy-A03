@@ -3,7 +3,7 @@
 - After running this workflow you'll get a .7z file in the releases section.
 - Extract that 7z file you'll get a super.tar. Just a .tar with the custom GSI.
 - Then Flash the super.tar using ODIN in AP Section.
-- You must select a custom PHH GSI with Android Version below 12.
+- You must select a custom PHH GSI with Android Version below 12 (now 13). 
 - You install this at your own risk. Me not responsible for any bootloops, data loss, soft-brick, or hardware damage.
 
 # How to Use this
@@ -50,12 +50,13 @@ like this LineageOS-20.1-a035fxxnn-arm64-gapps.7z
 - [PixelOS GSI Github](https://github.com/MisterZtr/PixelOS_gsi/releases)
 - [AOSP (Second One)](https://developer.android.com/topic/generic-system-image/releases#android-gsi-14)
 - [ArrowOS GSI](https://github.com/naz664/ArrowOS_gsi/releases)
+- [RestlessOS (TD GSI)](https://github.com/cawilliamson/treble_restlessos)
 
 - moved
 - # Note from Endemanset
 - The reason why i forked this was just to make GSIs for unfortunate Bit 9 Security Layout users like me
 - I will do all the work for you all 
-- Both LineageOS 20 and 21 + Pre Quarterly Platform Release 21 build and AOSP 14 works (Based on SM-A035F)
+- Both LineageOS 20 and 21 + Pre Quarterly Platform Release 21 build and AOSP 14 works, and RestlessOS 17 too (dirty flash from PQRP2 LOS 21 to ROS 17) (Based on SM-A035F)
 - Since the OG repo hasnt been updated, i am updating this
 - User Tests contains : PixelOS TD (Android 14), Evolution X, AOSP 14 (GMS UP1A), NotVanilla LineageOS 21 P-QPR2 and ArrowOS
 - I recommend ArrowOS for stability (because of size), LineageOS 21 (NotVanilla P-QPR2) for Google Play and smooth Android 14, AOSP 14 (Oldest) for a Pixel Experience (get it?), LineageOS 20 for Smooth Android 13 (like ArrowOS)
