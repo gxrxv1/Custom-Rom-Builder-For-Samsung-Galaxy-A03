@@ -21,7 +21,7 @@ on:
       VENDOR:
         description: 'Enter Direct Link Of Your Version Vendor' # should keep this as default since its prob compatible with all A03 bit 9 phones
         required: true
-        default: 'https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/vendor.img'
+        default: 'https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/vendor.img?use_mirror=gigenet'
 
 jobs:
   Build:
@@ -34,7 +34,7 @@ jobs:
     - name: Install Dependencies # should prob update stuff that is dead in this ubuntu runner, thanks p7zip but uhh, you arent maintained anymore :(
       run: |
         sudo apt update
-        sudo apt install -y zip xz-utils unzip 7zip 7zip-rar wget android-sdk-libsparse-utils file  
+        sudo apt install -y zip xz-utils unzip 7zip 7zip-rar aria2 wget android-sdk-libsparse-utils file  
 
     - name: Installing Tools # keep this
       run: |
@@ -45,7 +45,7 @@ jobs:
     - name: Downloading Your GSI And Extracting # file type detect and delete sys; gsi_archive for storage space
       run: |
         cd lpbinary/binary
-        wget "${{ github.event.inputs.GSI }}" -O gsi_archive
+        aria2c -x 16 -s 16 -k 1M -U "Mozilla/5.0" "${{ github.event.inputs.GSI }}" -o gsi_archive
         mkdir -p sys
         
         FILE_TYPE=$(file -b gsi_archive)
@@ -80,10 +80,9 @@ jobs:
     - name: Preparing Files # downloading product.img and system_ext.img
       run: |
         cd lpbinary/binary
-        wget "${{ github.event.inputs.VENDOR }}" -O vendor.img
-        wget https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/product.img -O product.img
-        wget https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/system_ext.img -O system_ext.img 
-
+         aria2c -x 8 -s 8 -k 1M -U "Mozilla/5.0" "${{ github.event.inputs.VENDOR }}" -o vendor.img
+         aria2c -x 8 -s 8 -k 1M -U "Mozilla/5.0" "https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/product.img" -o product.img
+         aria2c -x 8 -s 8 -k 1M -U "Mozilla/5.0" "https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/system_ext.img" -o system_ext.img
     - name: Packing # packing to 7z package and delete system.img; vendor.img; product.img and system_ext.img
       run: |
         cd lpbinary/binary
