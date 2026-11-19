@@ -7,50 +7,68 @@ on:
   workflow_dispatch:
     inputs:
       GSI:
-        description: 'GSI Image Direct Link' # supports .img, .7z, .xz, .gz, .zip (wait what i have img suppot?)
+        description: 'GSI Image Direct Link' # supports .img, .7z, .xz, .gz, .zip
         required: true
         default: 'https://github.com/cawilliamson/treble_restlessos/releases/download/17.0.0-202611021750/RestlessOS-arm64-ab-17.0.0-202611021750.img.xz'
       NAME:
-        description: 'Rom Name' # ig set it to anything you want
+        description: 'Rom Name'
         required: true
         default: 'RestlessOS-17.0-arm64_ab.7z'
       VERSION:
-        description: 'Baseband Version' # idk set it as anything ig
+        description: 'Baseband Version'
         required: true
         default: 'A035FXXS9CYG1'
       VENDOR:
-        description: 'Enter Direct Link Of Your Version Vendor' # should keep this as default since its prob compatible with all A03 bit 9 phones
+        description: 'Enter Direct Link Of Your Version Vendor'
         required: true
-        default: 'https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/vendor.img?use_mirror=gigenet'
+        default: 'https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/vendor.img'
 
 jobs:
   Build:
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Install Dependencies # should prob update stuff that is dead in this ubuntu runner, thanks p7zip but uhh, you arent maintained anymore :(
+    - name: Install Dependencies
       run: |
         sudo apt update
-        sudo apt install -y zip xz-utils unzip 7zip 7zip-rar aria2 wget android-sdk-libsparse-utils file  
+        sudo apt install -y zip xz-utils unzip 7zip 7zip-rar aria2 wget android-sdk-libsparse-utils file
 
-    - name: Installing Tools # keep this
+    - name: Installing Tools
       run: |
         git clone https://github.com/Exynos-nigg/lpunpack-lpmake-mirror.git lpbinary
         cd lpbinary
         bash install.sh
 
-    - name: Downloading Your GSI And Extracting # file type detect and delete sys; gsi_archive for storage space
+    - name: Downloading Your GSI And Extracting
       run: |
         cd lpbinary/binary
-        aria2c -x 16 -s 16 -k 1M -U "Mozilla/5.0" "${{ github.event.inputs.GSI }}" -o gsi_archive
+
+        to_sf_mirror() {
+          local url="$1"
+          local sf_host="gigenet.dl.sourceforge.net"
+          url="${url%/download}"
+          url="${url%%\?*}"
+          if [[ "$url" == *"sourceforge.net/projects/"* ]]; then
+            echo "$url" | sed -E "s|https?://sourceforge\.net/projects/([^/]+)/files/(.*)|https://${sf_host}/project/\1/\2|"
+          else
+            echo "$url"
+          fi
+        }
+
+        GSI_URL=$(to_sf_mirror "${{ github.event.inputs.GSI }}")
+        aria2c -x 4 -s 4 -k 1M --summary-interval=0 --max-tries=5 --retry-wait=3 --user-agent="curl/8.16.0" "$GSI_URL" -o gsi_archive
+
         mkdir -p sys
-        
         FILE_TYPE=$(file -b gsi_archive)
-        
-        if echo "$FILE_TYPE" | grep -qi '7-zip'; then
+        echo "Downloaded file type: $FILE_TYPE"
+
+        if echo "$FILE_TYPE" | grep -qi 'HTML\|ASCII text\|UTF-8'; then
+          echo "Error: Downloaded file is HTML/text instead of a GSI image. Check your URL."
+          exit 1
+        elif echo "$FILE_TYPE" | grep -qi '7-zip'; then
           echo "Detected 7z archive. Extracting..."
           7z x gsi_archive -osys/
         elif echo "$FILE_TYPE" | grep -qi 'Zip archive'; then
@@ -68,29 +86,52 @@ jobs:
           echo "Detected raw image or uncompressed file."
           mv gsi_archive sys/system.img
         fi
-        
-        if [ -f sys/system.img ]; then
-          mv sys/system.img system.img
-        else
-          mv sys/*.img system.img
-        fi
-        
-        rm -rf sys gsi_archive
 
-    - name: Preparing Files # downloading product.img and system_ext.img
+        rm -f gsi_archive
+
+        IMG_FOUND=$(find sys -type f -name "*.img" | head -n 1)
+        if [ -z "$IMG_FOUND" ]; then
+          echo "Error: No .img file found after extraction."
+          exit 1
+        fi
+
+        mv "$IMG_FOUND" system.img
+        rm -rf sys
+        ls -lh system.img
+
+    - name: Preparing Files
       run: |
         cd lpbinary/binary
-         aria2c -x 8 -s 8 -k 1M -U "Mozilla/5.0" "${{ github.event.inputs.VENDOR }}" -o vendor.img
-         aria2c -x 8 -s 8 -k 1M -U "Mozilla/5.0" "https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/product.img" -o product.img
-         aria2c -x 8 -s 8 -k 1M -U "Mozilla/5.0" "https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/system_ext.img" -o system_ext.img
-    - name: Packing # packing to 7z package and delete system.img; vendor.img; product.img and system_ext.img
+
+        to_sf_mirror() {
+          local url="$1"
+          local sf_host="gigenet.dl.sourceforge.net"
+          url="${url%/download}"
+          url="${url%%\?*}"
+          if [[ "$url" == *"sourceforge.net/projects/"* ]]; then
+            echo "$url" | sed -E "s|https?://sourceforge\.net/projects/([^/]+)/files/(.*)|https://${sf_host}/project/\1/\2|"
+          else
+            echo "$url"
+          fi
+        }
+
+        VENDOR_URL=$(to_sf_mirror "${{ github.event.inputs.VENDOR }}")
+        PRODUCT_URL=$(to_sf_mirror "https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/product.img/download")
+        SYSTEM_EXT_URL=$(to_sf_mirror "https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/system_ext.img/download")
+
+        aria2c -x 4 -s 4 -k 1M --summary-interval=0 --max-tries=5 --retry-wait=3 --user-agent="curl/8.16.0" "$VENDOR_URL" -o vendor.img
+        aria2c -x 4 -s 4 -k 1M --summary-interval=0 --max-tries=5 --retry-wait=3 --user-agent="curl/8.16.0" "$PRODUCT_URL" -o product.img
+        aria2c -x 4 -s 4 -k 1M --summary-interval=0 --max-tries=5 --retry-wait=3 --user-agent="curl/8.16.0" "$SYSTEM_EXT_URL" -o system_ext.img
+        
+        ls -lh system.img vendor.img product.img system_ext.img
+
+    - name: Packing
       run: |
         cd lpbinary/binary
         ./lpmake --metadata-size 65536 --super-name super --metadata-slots 3 --device super:6763315200 --group main:6761218048 --partition system:readonly:$(ls -nl system.img | awk '{print $5}'):main --image system=system.img --partition vendor:readonly:$(ls -nl vendor.img | awk '{print $5}'):main --image vendor=vendor.img --partition product:readonly:$(ls -nl product.img | awk '{print $5}'):main --image product=product.img --partition system_ext:readonly:$(ls -nl system_ext.img | awk '{print $5}'):main --image system_ext=system_ext.img --sparse --output super.img
-        # Remove individual raw images immediately after creating super.img to save disk space
         rm -f system.img vendor.img product.img system_ext.img
 
-    - name: Creating tar and compressing to 7z # actual packing to a 7z and also deleting super.img and super.tar
+    - name: Creating tar and compressing to 7z
       run: |
         cd lpbinary/binary
         tar -cvf super.tar super.img
@@ -98,7 +139,7 @@ jobs:
         7z a "${{ github.event.inputs.NAME }}" super.tar
         rm -f super.tar
 
-    - name: Upload to Release # uploading to releases
+    - name: Upload to Release
       uses: softprops/action-gh-release@v2
       with:
         files: lpbinary/binary/${{ github.event.inputs.NAME }}
