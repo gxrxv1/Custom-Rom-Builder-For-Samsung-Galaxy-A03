@@ -4,19 +4,16 @@ permissions:
   contents: write
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       GSI:
         description: 'GSI Image Direct Link' # supports .img, .7z, .xz, .gz, .zip (wait what i have img suppot?)
         required: true
-        default: 'https://github.com/naz664/ArrowOS_gsi/releases/download/v2023.10.28/ArrowOS-13.1-arm64_bgN-slim-Unofficial.img.xz'
+        default: 'https://github.com/cawilliamson/treble_restlessos/releases/download/17.0.0-202611021750/RestlessOS-arm64-ab-17.0.0-202611021750.img.xz'
       NAME:
         description: 'Rom Name' # ig set it to anything you want
         required: true
-        default: 'ArrowOS-13.1-arm64_bgN-slim-Unofficial.7z'
+        default: 'RestlessOS-17.0-arm64_ab.7z'
       VERSION:
         description: 'Baseband Version' # idk set it as anything ig
         required: true
