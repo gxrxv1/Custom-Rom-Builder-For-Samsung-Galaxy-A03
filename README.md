@@ -56,7 +56,7 @@ like this LineageOS-20.1-a035fxxnn-arm64-gapps.7z
 - # Note from Endemanset
 - The reason why i forked this was just to make GSIs for unfortunate Bit 9 Security Layout users like me
 - I will do all the work for you all 
-- Both LineageOS 20 and 21 + Pre Quarterly Platform Release 21 build and AOSP 14 works, and RestlessOS 17 too (dirty flash from LineageOS 21 P-QRP2 to RestlessOS 17) (Based on SM-A035F)
+- Both LineageOS 20 and 21 + Pre Quarterly Platform Release 21 build and AOSP 14 works, and RestlessOS 17 too (dirty flash from LineageOS 21 P-QRP2 to RestlessOS 17/ clean flash it for internet) (Based on SM-A035F)
 - Since the OG repo hasnt been updated, i am updating this
 - User Tests contains : PixelOS TD (Android 14), Evolution X, AOSP 14 (GMS UP1A), NotVanilla LineageOS 21 P-QPR2 and ArrowOS
 - I recommend ArrowOS for stability (because of size), LineageOS 21 (NotVanilla P-QPR2) for Google Play and smooth Android 14, AOSP 14 (Oldest) for a Pixel Experience (get it?), LineageOS 20 for Smooth Android 13 (like ArrowOS)
