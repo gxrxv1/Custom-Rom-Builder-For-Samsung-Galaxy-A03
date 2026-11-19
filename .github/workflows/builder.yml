@@ -42,7 +42,7 @@ jobs:
         cd lpbinary
         bash install.sh
 
-    - name: Downloading Your GSI And Extracting
+    - name: Downloading Your GSI And Extracting # can change -x 4 -s 4 to -x 8 -s 8 (recommended for faster speed)
       run: |
         cd lpbinary/binary
 
@@ -99,7 +99,7 @@ jobs:
         rm -rf sys
         ls -lh system.img
 
-    - name: Preparing Files
+    - name: Preparing Files # can change -x 4 -s 4 to -x 8 -s 8 (recommended for faster speed)
       run: |
         cd lpbinary/binary
 
