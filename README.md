@@ -17,7 +17,7 @@
 ```sh
 https://github.com/ponces/treble_build_aosp/releases/download/v2023.12.01/aosp-arm64-ab-gapps-14.0-20231201.img.xz
 ```
-- If you use link from Sourceforge.net;
+- If you use link from Sourceforge.net; (from this part to the /download part, since aria2c has to_sf_mirror() and file -b magic-byte detection, this part is kept here for archival reasons)
 <br>⚬ Copy Download link of your GSI you'll get a link like this:</br>
  ```sh
 https://sourceforge.net/projects/andyyan-gsi/files/lineage-20.x/lineage-20.1-20231116-UNOFFICIAL-arm64_bgN.img.xz/download
@@ -26,7 +26,7 @@ https://sourceforge.net/projects/andyyan-gsi/files/lineage-20.x/lineage-20.1-202
  ```sh
 https://sourceforge.net/projects/andyyan-gsi/files/lineage-20.x/lineage-20.1-20231116-UNOFFICIAL-arm64_bgN.img.xz
  ```
-<br>⚬ The link must be end with .xz or a .gz or a .zip or a .7z</br>
+<br>⚬ The link must be end with .xz or a .gz or a .zip or a .7z or a .img</br>
 <br>2. Add Rom Name</br>
 <br>⚬ Then add the rom name it should be [rom_name]-[version]-[device version]-[arm64]-[gapps_or_vanila].7z<br>
 like this LineageOS-20.1-a035fxxnn-arm64-gapps.7z
