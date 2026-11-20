@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       GSI:
-        description: 'GSI Image Direct Link' # supports .img, .7z, .xz, .gz, .zip
+        description: 'GSI Image Direct Link' # supports .img, .7z, .xz, .gz, .zip, .img (wait i still have .img support?)
         required: true
         default: 'https://github.com/cawilliamson/treble_restlessos/releases/download/17.0.0-202611021750/RestlessOS-arm64-ab-17.0.0-202611021750.img.xz'
       NAME:
@@ -42,7 +42,7 @@ jobs:
         cd lpbinary
         bash install.sh
 
-    - name: Downloading Your GSI And Extracting # can change -x 4 -s 4 to -x 8 -s 8 (recommended for faster speed)
+    - name: Downloading Your GSI And Extracting # can change -x 8 -s 8 to -x 4 -s 4 (recommended for lower limitrates since 16 is not viable for speed)
       run: |
         cd lpbinary/binary
 
@@ -59,7 +59,7 @@ jobs:
         }
 
         GSI_URL=$(to_sf_mirror "${{ github.event.inputs.GSI }}")
-        aria2c -x 4 -s 4 -k 1M --summary-interval=0 --max-tries=5 --retry-wait=3 --user-agent="curl/8.16.0" "$GSI_URL" -o gsi_archive
+        aria2c -x 8 -s 8 -k 1M --summary-interval=0 --max-tries=5 --retry-wait=3 --user-agent="curl/8.16.0" "$GSI_URL" -o gsi_archive
 
         mkdir -p sys
         FILE_TYPE=$(file -b gsi_archive)
@@ -99,7 +99,7 @@ jobs:
         rm -rf sys
         ls -lh system.img
 
-    - name: Preparing Files # can change -x 4 -s 4 to -x 8 -s 8 (recommended for faster speed)
+    - name: Preparing Files # can change -x 8 -s 8 to -x 4 -s 4 (recommended for lower limitrates since 16 is not viable for speed)
       run: |
         cd lpbinary/binary
 
@@ -119,9 +119,9 @@ jobs:
         PRODUCT_URL=$(to_sf_mirror "https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/product.img/download")
         SYSTEM_EXT_URL=$(to_sf_mirror "https://sourceforge.net/projects/a03-file/files/A035FXXS9CYG1/system_ext.img/download")
 
-        aria2c -x 4 -s 4 -k 1M --summary-interval=0 --max-tries=5 --retry-wait=3 --user-agent="curl/8.16.0" "$VENDOR_URL" -o vendor.img
-        aria2c -x 4 -s 4 -k 1M --summary-interval=0 --max-tries=5 --retry-wait=3 --user-agent="curl/8.16.0" "$PRODUCT_URL" -o product.img
-        aria2c -x 4 -s 4 -k 1M --summary-interval=0 --max-tries=5 --retry-wait=3 --user-agent="curl/8.16.0" "$SYSTEM_EXT_URL" -o system_ext.img
+        aria2c -x 8 -s 8 -k 1M --summary-interval=0 --max-tries=5 --retry-wait=3 --user-agent="curl/8.16.0" "$VENDOR_URL" -o vendor.img
+        aria2c -x 8 -s 8 -k 1M --summary-interval=0 --max-tries=5 --retry-wait=3 --user-agent="curl/8.16.0" "$PRODUCT_URL" -o product.img
+        aria2c -x 8 -s 8 -k 1M --summary-interval=0 --max-tries=5 --retry-wait=3 --user-agent="curl/8.16.0" "$SYSTEM_EXT_URL" -o system_ext.img
         
         ls -lh system.img vendor.img product.img system_ext.img
 
